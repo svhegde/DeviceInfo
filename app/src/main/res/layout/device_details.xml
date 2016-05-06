@@ -11,6 +11,8 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Medium Text"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
         android:id="@+id/device"
         android:layout_weight="0.04" />
 
@@ -19,6 +21,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Medium Text"
+        android:layout_marginLeft="20dp"
         android:id="@+id/os"
         android:layout_weight="0.04" />
 
@@ -27,6 +30,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Medium Text"
+        android:layout_marginLeft="20dp"
         android:id="@+id/mft"
         android:layout_weight="0.04" />
 
@@ -35,6 +39,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Medium Text"
+        android:layout_marginLeft="20dp"
         android:id="@+id/user"
         android:layout_weight="0.04" />
 
@@ -43,6 +48,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Medium Text"
+        android:layout_marginLeft="20dp"
         android:id="@+id/lastChkOut"
         android:layout_weight="0.04" />
 

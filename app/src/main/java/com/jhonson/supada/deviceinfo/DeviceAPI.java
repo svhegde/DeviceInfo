@@ -1,5 +1,5 @@
 /**
- * DeviceAPI.java
+ * DeviceAPI.java is a interface call which does GET and POST.
  *
  * @author Supada Hegde
  * @version 1.0
@@ -11,14 +11,31 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Body;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface DeviceAPI {
 
-    String BASE_URL = "http://private-1cc0f-devicecheckout.apiary-mock.com";
+    String BASE_URL = "https://private-1cc0f-devicecheckout.apiary-mock.com";
 
     @GET("/devices")
     Call<List<Device>> getDevices();
+
+    @POST("/devices")
+    Call<Device> postDevice(
+            @Body Device device
+    );
+
+    // Currently POST api for update is not returning anything in response body
+    // Hence return type for Call has to be Void
+    @POST("/devices/{id}")
+    Call<Void> updateDevice(
+            @Path("id") int deviceId,
+            @Body Device device
+    );
 
     class Factory {
 

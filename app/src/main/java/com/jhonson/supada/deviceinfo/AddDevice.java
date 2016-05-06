@@ -7,6 +7,8 @@
 
 package com.jhonson.supada.deviceinfo;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,16 +16,28 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.text.TextUtils;
+import android.util.Log;
+import com.jhonson.supada.deviceinfo.Device;
+import java.util.List;
+import android.widget.Toast;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AddDevice extends AppCompatActivity implements View.OnClickListener {
     private EditText device;
     private EditText os;
     private EditText manufacturer;
+    public int listCount;
+    //DatabaseHelper myDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addphone);
+        Intent mainIntent = getIntent();
+        listCount = mainIntent.getIntExtra("count", 0);
 
         device = (EditText) findViewById(R.id.editText);
 
@@ -38,9 +52,9 @@ public class AddDevice extends AppCompatActivity implements View.OnClickListener
     @Override
     //validating all 3 fields
     public void onClick(View v) {
-        String strDevice = device.getText().toString();
-        String strOs = os.getText().toString();
-        String strMft = manufacturer.getText().toString();
+        final String strDevice = device.getText().toString();
+        final String strOs = os.getText().toString();
+        final String strMft = manufacturer.getText().toString();
 
         if (TextUtils.isEmpty(strDevice)) {
             device.setError("Please enter Device name");
@@ -55,9 +69,65 @@ public class AddDevice extends AppCompatActivity implements View.OnClickListener
 
         } else {
             Intent intent = new Intent(AddDevice.this, MainActivity.class);
+
+            Device postD = new Device();
+            postD.setDevice(strDevice);
+            postD.setOs(strOs);
+            postD.setManufacturer(strMft);
+
+            intent.putExtra("device", strDevice);
+            intent.putExtra("os", strOs);
+            intent.putExtra("mft", strMft);
+            Log.d("PostItems", strDevice + strOs + strMft);
+            DeviceAPI.Factory.getInstance().postDevice(postD).enqueue(new Callback<Device>() {
+                @Override
+                public void onResponse(Call<Device> call, Response<Device> response) {
+                    if (response.isSuccessful()) {
+                        Device deviceResp = response.body();
+                        Log.d("POST", response.message());
+                        Log.d("POSTRESP", deviceResp.getDevice());
+                        Toast.makeText(AddDevice.this, "Device " + strDevice + " added", Toast.LENGTH_SHORT).show();
+                        /*myDb.insertData(
+                                Integer.toString(listCount),
+                                strDevice,
+                                strOs, strMft,
+                                null, null, "false"
+                        );*/
+                        Toast.makeText(AddDevice.this,"Data Inserted", Toast.LENGTH_LONG).show();
+                    } else {
+                        int statusCode = response.code();
+
+                        // handle request errors
+                        ResponseBody errorBody = response.errorBody();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Device> call, Throwable t) {
+                    Log.e("POST ERROR", t.getMessage());
+                }
+            });
+
+
             startActivity(intent);
         }
 
+    }
+    @Override
+    public void onBackPressed() {
+        (new AlertDialog.Builder(this))
+                .setTitle("Confirm action")
+                .setMessage("You will loose all the data. Do you want to proceed?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent in = new Intent(AddDevice.this, MainActivity.class);
+                        startActivity(in);
+                        finish();
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
     }
 }
 
