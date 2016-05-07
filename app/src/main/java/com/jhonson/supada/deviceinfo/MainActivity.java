@@ -1,6 +1,6 @@
 /**
  * MainActivity.java is the main activity class which implements  "swipe to delete" on a recycler view with no 3rd party Library and
- *  drawing on empty space while items are animating with an "undo" option.It also includes REST API implementation using Retrofit .
+ * with an "undo" option.It also includes REST API implementation using Retrofit .
  *
  * @author Supada Hegde
  * @version 1.0
@@ -31,9 +31,11 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.content.Intent;
 import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import okhttp3.*;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     RecyclerView mRecyclerView;
     List<Device> deviceList;
-    //DatabaseHelper myDb;
+    DatabaseHelper myDb = new DatabaseHelper(this);
     Boolean callApi = true;
 
     @Override
@@ -57,16 +59,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setUpRecyclerView();
         ImageButton button = (ImageButton) findViewById(R.id.imageButton);
         button.setOnClickListener(this);
-        //myDb = new DatabaseHelper(this);
     }
+
     @Override
     public void onClick(View v) {
         Intent intent = new Intent(MainActivity.this, AddDevice.class);
-        int ListSize = 0;
-        if(deviceList != null) {
-            ListSize = deviceList.size();
-        }
-        intent.putExtra("count", ListSize);
         startActivity(intent);
     }
 
@@ -108,13 +105,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             boolean initiated;
 
             private void init() {
-                background = new ColorDrawable(Color.rgb(9,46,32));
+                background = new ColorDrawable(Color.rgb(9, 46, 32));
                 xMark = ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_clear_24dp);
                 xMark.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
                 xMarkMargin = (int) MainActivity.this.getResources().getDimension(R.dimen.ic_clear_margin);
                 initiated = true;
             }
-
 
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
@@ -149,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
                 View itemView = viewHolder.itemView;
-
 
                 if (viewHolder.getAdapterPosition() == -1) {
 
@@ -186,18 +181,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * We're gonna setup another ItemDecorator that will draw the background in the empty space while the items are animating to thier new positions
+     *ItemDecorator that will draw the background in the empty space while the items are animating to thier new positions
      * after an item is removed.
      */
     private void setUpAnimationDecoratorHelper() {
         mRecyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
 
-            // we want to cache this and not allocate anything repeatedly in the onDraw method
             Drawable background;
             boolean initiated;
 
             private void init() {
-                background = new ColorDrawable(Color.rgb(9,46,32));
+                background = new ColorDrawable(Color.rgb(9, 46, 32));
                 initiated = true;
             }
 
@@ -211,13 +205,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // only if animation is in progress
                 if (parent.getItemAnimator().isRunning()) {
 
-
                     View lastViewComingDown = null;
                     View firstViewComingUp = null;
-
                     int left = 0;
                     int right = parent.getWidth();
-
                     int top = 0;
                     int bottom = 0;
 
@@ -271,35 +262,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         List<String> itemsPendingRemoval;
         boolean undoOn; // is undo on, you can turn it on from the toolbar menu
 
-        private Handler handler = new Handler(); // hanlder for running delayed runnables
+        private Handler handler = new Handler();
         HashMap<String, Runnable> pendingRunnables = new HashMap<>(); // map of items to pending runnables, so we can cancel a removal if need be
 
         public TestAdapter() {
             items = new ArrayList<>();
             itemsPendingRemoval = new ArrayList<>();
-            //myDb = new DatabaseHelper(getApplicationContext());
-            //final Device dbDevice = myDb.getAllData();
 
+            ArrayList<Device> dList = myDb.getAllDevices();
+
+            /* Call API only if there is no data in locally. Reason for this being, api is locked
+             and actual updates/inserts are not allowed to the endpoints. Hence done this way
+            only to reflect updated data from other screens.*/
+            if (!dList.isEmpty()) {
+                callApi = false;
+            }
+
+            Log.d("CURSORBEFORE", String.valueOf(callApi));
+
+            if (callApi) {
                 DeviceAPI.Factory.getInstance().getDevices().enqueue(new Callback<List<Device>>() {
                     @Override
                     public void onResponse(Call<List<Device>> call, Response<List<Device>> response) {
                         if (response.isSuccessful()) {
                             deviceList = response.body();
+                            //flush the table first
+                            myDb.deleteDevices();
                             for (int i = 0; i < deviceList.size(); i++) {
 
-                                if (deviceList.get(i).isIsCheckedOut()) {
-                                    items.add(deviceList.get(i).getDevice() + " - " + deviceList.get(i).getOs() + "-" + "Checked out by " + deviceList.get(i).getLastCheckedOutBy());
+                                if (deviceList.get(i).isIsCheckedOut().equals("true")) {
+                                    items.add(deviceList.get(i).getDevice() + " - " + deviceList.get(i).getOs() + "-" + " Checked out by " + deviceList.get(i).getLastCheckedOutBy());
 
                                 } else {
-                                    items.add(deviceList.get(i).getDevice() + " - " + deviceList.get(i).getOs() + "Available");
+                                    items.add(deviceList.get(i).getDevice() + " - " + deviceList.get(i).getOs() + " Available");
                                 }
                                 Log.d("API Data", deviceList.get(i).getDevice());
-                                /*myDb.insertData(Integer.toString(deviceList.get(i).getId()), deviceList.get(i).getDevice(),
+                                Boolean ins = myDb.insertDevice(Integer.toString(deviceList.get(i).getId()), deviceList.get(i).getDevice(),
                                         deviceList.get(i).getOs(), deviceList.get(i).getManufacturer(),
                                         deviceList.get(i).getLastCheckedOutDate(), deviceList.get(i).getLastCheckedOutBy(),
                                         String.valueOf(deviceList.get(i).isIsCheckedOut())
-                                );*/
-                                //Toast.makeText(MainActivity.this, "Data Inserted", Toast.LENGTH_LONG).show();
+                                );
+                                Log.d("INSERT", Boolean.toString(ins));
                                 notifyDataSetChanged();
                             }
                         } else {
@@ -315,6 +318,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.e("API ERROR", t.getMessage());
                     }
                 });
+            } else {
+                for (int i = 0; i < dList.size(); i++) {
+                    if (dList.get(i).isIsCheckedOut().equals("true")) {
+                        items.add(dList.get(i).getDevice() + " - " + dList.get(i).getOs() + "-" + " Checked out by " + dList.get(i).getLastCheckedOutBy());
+                    } else {
+                        items.add(dList.get(i).getDevice() + " - " + dList.get(i).getOs() + " Available");
+                    }
+                    notifyDataSetChanged();
+                }
+            }
         }
 
         @Override
@@ -333,12 +346,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void onClick(View v) {
 
-                    Device selectedDevice = deviceList.get(position);
+                    Device selectedDevice = myDb.getDevice((position));
                     Intent deviceIntent = new Intent(getApplicationContext(), DeviceDetails.class);
                     deviceIntent.putExtra("id", selectedDevice.getId());
                     deviceIntent.putExtra("device", selectedDevice.getDevice());
-                    deviceIntent.putExtra("os",selectedDevice.getOs());
-                    deviceIntent.putExtra("manufacturer",selectedDevice.getManufacturer());
+                    deviceIntent.putExtra("os", selectedDevice.getOs());
+                    deviceIntent.putExtra("manufacturer", selectedDevice.getManufacturer());
                     deviceIntent.putExtra("user", selectedDevice.getLastCheckedOutBy());
                     deviceIntent.putExtra("lastCheckOut", selectedDevice.getLastCheckedOutDate());
                     deviceIntent.putExtra("isCheckedOut", selectedDevice.isIsCheckedOut());
@@ -350,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (itemsPendingRemoval.contains(item)) {
                 // we need to show the "undo" state of the row
-                viewHolder.itemView.setBackgroundColor(Color.rgb(9,46,32));
+                viewHolder.itemView.setBackgroundColor(Color.rgb(9, 46, 32));
                 viewHolder.titleTextView.setVisibility(View.GONE);
                 viewHolder.undoButton.setVisibility(View.VISIBLE);
                 viewHolder.undoButton.setOnClickListener(new View.OnClickListener() {
@@ -382,7 +395,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
 
-
         public void setUndoOn(boolean undoOn) {
             this.undoOn = undoOn;
         }
@@ -409,13 +421,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        public void remove(int position) {
+        public void remove(final int position) {
             String item = items.get(position);
             if (itemsPendingRemoval.contains(item)) {
                 itemsPendingRemoval.remove(item);
             }
             if (items.contains(item)) {
                 items.remove(position);
+                //Call Delete API
+                DeviceAPI.Factory.getInstance().deleteDevice(position).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            // Remove the item from database too
+                            Integer res = myDb.deleteDevice(String.valueOf(position));
+                            notifyDataSetChanged();
+                        } else {
+                            int statusCode = response.code();
+
+                            // handle request errors
+                            ResponseBody errorBody = response.errorBody();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.e("API ERROR", t.getMessage());
+                    }
+                });
+
                 notifyItemRemoved(position);
             }
         }
@@ -441,7 +475,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
-
 
 
 }
