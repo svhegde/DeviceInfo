@@ -17,9 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.text.TextUtils;
 import android.util.Log;
-import com.jhonson.supada.deviceinfo.Device;
-import java.util.List;
-import android.widget.Toast;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,14 +28,13 @@ public class AddDevice extends AppCompatActivity implements View.OnClickListener
     private EditText os;
     private EditText manufacturer;
     public int listCount;
-    //DatabaseHelper myDb;
+    DatabaseHelper myDb = new DatabaseHelper(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addphone);
         Intent mainIntent = getIntent();
-        listCount = mainIntent.getIntExtra("count", 0);
 
         device = (EditText) findViewById(R.id.editText);
 
@@ -68,8 +65,8 @@ public class AddDevice extends AppCompatActivity implements View.OnClickListener
             manufacturer.setError("Please enter Manufacturer name");
 
         } else {
-            Intent intent = new Intent(AddDevice.this, MainActivity.class);
-
+            final Intent intent = new Intent(AddDevice.this, MainActivity.class);
+            listCount = myDb.numberOfRows();
             Device postD = new Device();
             postD.setDevice(strDevice);
             postD.setOs(strOs);
@@ -78,28 +75,24 @@ public class AddDevice extends AppCompatActivity implements View.OnClickListener
             intent.putExtra("device", strDevice);
             intent.putExtra("os", strOs);
             intent.putExtra("mft", strMft);
-            Log.d("PostItems", strDevice + strOs + strMft);
             DeviceAPI.Factory.getInstance().postDevice(postD).enqueue(new Callback<Device>() {
                 @Override
                 public void onResponse(Call<Device> call, Response<Device> response) {
                     if (response.isSuccessful()) {
                         Device deviceResp = response.body();
-                        Log.d("POST", response.message());
-                        Log.d("POSTRESP", deviceResp.getDevice());
-                        Toast.makeText(AddDevice.this, "Device " + strDevice + " added", Toast.LENGTH_SHORT).show();
-                        /*myDb.insertData(
+                        Boolean ins = myDb.insertDevice(
                                 Integer.toString(listCount),
                                 strDevice,
                                 strOs, strMft,
                                 null, null, "false"
-                        );*/
-                        Toast.makeText(AddDevice.this,"Data Inserted", Toast.LENGTH_LONG).show();
+                        );
                     } else {
                         int statusCode = response.code();
 
                         // handle request errors
                         ResponseBody errorBody = response.errorBody();
                     }
+                    startActivity(intent);
                 }
 
                 @Override
@@ -107,12 +100,10 @@ public class AddDevice extends AppCompatActivity implements View.OnClickListener
                     Log.e("POST ERROR", t.getMessage());
                 }
             });
-
-
-            startActivity(intent);
         }
 
     }
+
     @Override
     public void onBackPressed() {
         (new AlertDialog.Builder(this))

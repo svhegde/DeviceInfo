@@ -1,5 +1,5 @@
 /**
- * DeviceAPI.java is a interface call which does GET and POST.
+ * DeviceAPI.java is a interface call which does CRUD Operations.
  *
  * @author Supada Hegde
  * @version 1.0
@@ -8,9 +8,11 @@
 package com.jhonson.supada.deviceinfo;
 
 import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.DELETE;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Body;
@@ -37,25 +39,28 @@ public interface DeviceAPI {
             @Body Device device
     );
 
+    @DELETE("/devices/{id}")
+    Call<Void> deleteDevice(
+            @Path("id") int deviceId
+    );
+
     class Factory {
 
         private static DeviceAPI service;
 
         public static DeviceAPI getInstance() {
-            if (service  == null) {
+            if (service == null) {
                 Retrofit retrofit = new Retrofit.Builder()
                         .baseUrl(BASE_URL)
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
                 service = retrofit.create(DeviceAPI.class);
                 return service;
-            }
-            else {
+            } else {
                 return service;
             }
         }
     }
-
 
 
 }

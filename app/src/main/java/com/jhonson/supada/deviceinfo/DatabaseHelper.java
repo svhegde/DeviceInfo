@@ -7,28 +7,20 @@
 
 package com.jhonson.supada.deviceinfo;
 
+import android.database.DatabaseUtils;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    public static final String DATABASE_NAME= "device.db";
-    public static final String TABLE_NAME= "device_table";
-    public static final String COL_1="ID";
-    public static final String COL_2="DEVICE";
-    public static final String COL_3="OS";
-    public static final String COL_4="MANUFACTURER";
-    public static final String COL_5="LASTCHEKOUT_DATE";
-    public static final String COL_6="LASTCHECKOUT_BY";
-    public static final String COL_7="ISCHECKEDOUT";
+    public static final String DATABASE_NAME = "devices.db";
+    private long devicelist;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -37,76 +29,136 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        final String COL_ID = "ID";
-        final String COL_DEVICE = "DEVICE";
-        final String COL_OS = "OS";
-        final String COL_MANUFACTURER = "MANUFACTURER";
-        final String COL_LASTCHEKOUT_DATE = "LASTCHEKOUT_DATE";
-        final String COL_LASTCHECKOUT_BY = "LASTCHECKOUT_BY";
-        final String COL_ISCHECKEDOUT = "ISCHECKEDOUT";
-        final String FTS_TABLE_CREATE =
-                "CREATE VIRTUAL TABLE " + TABLE_NAME +
-                        " USING fts3 (" +
-                        COL_ID + ", " +
-                        COL_DEVICE + ", " +
-                        COL_OS + ", " +
-                        COL_MANUFACTURER + ", " +
-                        COL_LASTCHEKOUT_DATE + ", " +
-                        COL_LASTCHECKOUT_BY + ", " +
-                        COL_ISCHECKEDOUT +
-                        ")";
-        db.execSQL(FTS_TABLE_CREATE);
+        db.execSQL(
+                "create table devicelist " +
+                        "(id integer primary key, device text, os text, manufacturer text, lastcheckout_date text, lastcheckout_by text, ischecked_out text)"
+        );
+        Log.d("TABLE", "created");
 
     }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS"+ TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS devicelist");
         onCreate(db);
 
     }
-    public boolean insertData(String id, String device, String os,
-                              String manufacturer, String lastcheckoutDate, String lastcheckoutBy, String isCheckedOut) {
+
+    public int numberOfRows() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int numRows = (int) DatabaseUtils.queryNumEntries(db, "devicelist");
+        return numRows;
+    }
+
+    public boolean insertDevice(String id, String device, String os,
+                                String manufacturer, String lastcheckout_date, String lastcheckout_by, String ischecked_out) {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(COL_1, id);
-        contentValues.put(COL_2, device);
-        contentValues.put(COL_3, os);
-        contentValues.put(COL_4, manufacturer);
-        contentValues.put(COL_5, lastcheckoutDate);
-        contentValues.put(COL_6, lastcheckoutBy);
-        contentValues.put(COL_7, isCheckedOut);
-        long result = db.insert(TABLE_NAME, null, contentValues);
+        contentValues.put("id", id);
+        contentValues.put("device", device);
+        contentValues.put("os", os);
+        contentValues.put("manufacturer", manufacturer);
+        contentValues.put("lastcheckout_date", lastcheckout_date);
+        contentValues.put("lastcheckout_by", lastcheckout_by);
+        contentValues.put("ischecked_out", ischecked_out);
+        long result = devicelist;
         if (result == -1) {
             return false;
-        } else
+        } else {
             return true;
+        }
     }
-    public Device getAllData(){
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor res = db.rawQuery("select * from " + TABLE_NAME, null);
-        //List<Device> retDevice = Arrays.asList(new Device[6]);
-        if (res != null) {
-            res.moveToFirst();
-            int i = 0;
-            Device d = new Device();
-            while(!res.isAfterLast()) {
 
-                d.setId(Integer.parseInt(res.getString(0)));
-                d.setDevice(res.getString(1));
-                d.setOs(res.getString(2));
-                d.setManufacturer(res.getString(3));
-                d.setLastCheckedOutDate(res.getString(4));
-                d.setLastCheckedOutBy(res.getString(5));
-                d.setIsCheckedOut(false);
-            }
-            return d;
-        } else{
-            return null;
+    public Device getDevice(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from devicelist where id=" + id + "", null);
+        res.moveToFirst();
+        Device d = new Device();
+        d.setId(res.getShort(res.getColumnIndex("id")));
+        d.setDevice(res.getString(res.getColumnIndex("device")));
+        d.setOs(res.getString(res.getColumnIndex("os")));
+        d.setManufacturer(res.getString(res.getColumnIndex("manufacturer")));
+        d.setLastCheckedOutDate(res.getString(res.getColumnIndex("lastcheckout_date")));
+        d.setLastCheckedOutBy(res.getString(res.getColumnIndex("lastcheckout_by")));
+        d.setIsCheckedOut(res.getString(res.getColumnIndex("ischecked_out")));
+
+        if (d.getLastCheckedOutBy() == null) {
+            d.setLastCheckedOutBy("");
         }
+        if (d.getLastCheckedOutDate() == null) {
+            d.setLastCheckedOutDate("");
+        }
+        if (d.getOs() == null) {
+            d.setOs("");
+        }
+        if (!res.isClosed()) {
+            res.close();
+        }
+        return d;
     }
+
+    public boolean updateDevice(String id, String lastcheckeout_date, String lastcheckout_by, String ischecked_out) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("lastcheckout_date", lastcheckeout_date);
+        contentValues.put("lastcheckout_by", lastcheckout_by);
+        contentValues.put("ischecked_out", ischecked_out);
+        long res = db.update("devicelist", contentValues, "id = ? ", new String[]{id});
+        Log.d("UPDATE STATUS", String.valueOf(res));
+        if (res == -1) {
+            Log.d("UPDATE", "FAILED");
+            return false;
         }
+        return true;
+    }
+
+    public Integer deleteDevice(String id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("devicelist",
+                "id = ? ",
+                new String[]{id});
+    }
+
+    public Integer deleteDevices() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("devicelist", null, null);
+    }
+
+    public ArrayList<Device> getAllDevices() {
+        ArrayList<Device> retDevice = new ArrayList<Device>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from devicelist", null);
+        res.moveToFirst();
+
+        while (res.isAfterLast() == false) {
+            Device d = new Device();
+            d.setId(res.getShort(res.getColumnIndex("id")));
+            d.setDevice(res.getString(res.getColumnIndex("device")));
+            d.setOs(res.getString(res.getColumnIndex("os")));
+            d.setManufacturer(res.getString(res.getColumnIndex("manufacturer")));
+            d.setLastCheckedOutDate(res.getString(res.getColumnIndex("lastcheckout_date")));
+            d.setLastCheckedOutBy(res.getString(res.getColumnIndex("lastcheckout_by")));
+            d.setIsCheckedOut(res.getString(res.getColumnIndex("ischecked_out")));
+
+            if (d.getLastCheckedOutBy() == null) {
+                d.setLastCheckedOutBy("");
+            }
+            if (d.getLastCheckedOutDate() == null) {
+                d.setLastCheckedOutDate("");
+            }
+            if (d.getOs() == null) {
+                d.setOs("");
+            }
+            retDevice.add(d);
+            res.moveToNext();
+        }
+        return retDevice;
+    }
+
+
+}
 
 
 

@@ -8,6 +8,7 @@
 package com.jhonson.supada.deviceinfo;
 
 import javax.annotation.Generated;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -34,131 +35,103 @@ public class Device {
     private String lastCheckedOutBy;
     @SerializedName("isCheckedOut")
     @Expose
-    private boolean isCheckedOut;
+    private String isCheckedOut;
 
     /**
-     *
-     * @return
-     *     The id
+     * @return The id
      */
     public int getId() {
         return id;
     }
 
     /**
-     *
-     * @param id
-     *     The id
+     * @param id The id
      */
     public void setId(int id) {
         this.id = id;
     }
 
     /**
-     *
-     * @return
-     *     The device
+     * @return The device
      */
     public String getDevice() {
         return device;
     }
 
     /**
-     *
-     * @param device
-     *     The device
+     * @param device The device
      */
     public void setDevice(String device) {
         this.device = device;
     }
 
     /**
-     *
-     * @return
-     *     The os
+     * @return The os
      */
     public String getOs() {
         return os;
     }
 
     /**
-     *
-     * @param os
-     *     The os
+     * @param os The os
      */
     public void setOs(String os) {
         this.os = os;
     }
 
     /**
-     *
-     * @return
-     *     The manufacturer
+     * @return The manufacturer
      */
     public String getManufacturer() {
         return manufacturer;
     }
 
     /**
-     *
-     * @param manufacturer
-     *     The manufacturer
+     * @param manufacturer The manufacturer
      */
     public void setManufacturer(String manufacturer) {
         this.manufacturer = manufacturer;
     }
 
     /**
-     *
-     * @return
-     *     The lastCheckedOutDate
+     * @return The lastCheckedOutDate
      */
     public String getLastCheckedOutDate() {
         return lastCheckedOutDate;
     }
 
     /**
-     *
-     * @param lastCheckedOutDate
-     *     The lastCheckedOutDate
+     * @param lastCheckedOutDate The lastCheckedOutDate
      */
     public void setLastCheckedOutDate(String lastCheckedOutDate) {
         this.lastCheckedOutDate = lastCheckedOutDate;
     }
 
     /**
-     *
-     * @return
-     *     The lastCheckedOutBy
+     * @return The lastCheckedOutBy
      */
     public String getLastCheckedOutBy() {
         return lastCheckedOutBy;
     }
 
     /**
-     *
-     * @param lastCheckedOutBy
-     *     The lastCheckedOutBy
+     * @param lastCheckedOutBy The lastCheckedOutBy
      */
     public void setLastCheckedOutBy(String lastCheckedOutBy) {
         this.lastCheckedOutBy = lastCheckedOutBy;
     }
 
     /**
-     *
-     * @return
-     *     The isCheckedOut
+     * @return The isCheckedOut
      */
-    public boolean isIsCheckedOut() {
+    public String isIsCheckedOut() {
         return isCheckedOut;
     }
 
     /**
-     *
-     * @param isCheckedOut
-     *     The isCheckedOut
+     * @param isCheckedOut The isCheckedOut
      */
-    public void setIsCheckedOut(boolean isCheckedOut) {
+    public void setIsCheckedOut(String isCheckedOut) {
         this.isCheckedOut = isCheckedOut;
     }
 

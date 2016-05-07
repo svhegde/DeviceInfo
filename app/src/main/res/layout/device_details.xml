@@ -10,7 +10,7 @@
         android:layout_width="420dp"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
+        android:text=""
         android:layout_marginLeft="20dp"
         android:layout_marginTop="20dp"
         android:id="@+id/device"
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
+        android:text=""
         android:layout_marginLeft="20dp"
         android:id="@+id/os"
         android:layout_weight="0.04" />
@@ -29,7 +29,7 @@
         android:layout_width="428dp"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
+        android:text=""
         android:layout_marginLeft="20dp"
         android:id="@+id/mft"
         android:layout_weight="0.04" />
@@ -38,7 +38,7 @@
         android:layout_width="420dp"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
+        android:text=""
         android:layout_marginLeft="20dp"
         android:id="@+id/user"
         android:layout_weight="0.04" />
@@ -47,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
+        android:text=""
         android:layout_marginLeft="20dp"
         android:id="@+id/lastChkOut"
         android:layout_weight="0.04" />
@@ -57,5 +57,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="CheckIn" />
+        android:text="Check-In" />
 </LinearLayout>
